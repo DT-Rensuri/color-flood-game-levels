@@ -1,5 +1,8 @@
 # Level content repository
 
+Repo này là nguồn dữ liệu level cho `color_flood_game`. Tool Rust sẽ tạo level
+và tự động rebuild `manifest.json`, nên không cần copy hash bằng tay.
+
 Thư mục này là catalog dữ liệu màn chơi được phục vụ qua GitHub. App tải
 `manifest.json`, sau đó tải từng file JSON theo `url`, kiểm tra `size` và
 `sha256`, rồi lưu cache để chơi offline.
@@ -7,16 +10,14 @@ Thư mục này là catalog dữ liệu màn chơi được phục vụ qua GitH
 ## Cấu trúc
 
 ```text
-content/
-  manifest.json
-assets/levels/
+manifest.json
+levels/
   level_1.json
   ...
 ```
 
-Manifest hiện trỏ tới `assets/levels` trong cùng repository để dữ liệu không bị
-nhân đôi. Trước khi publish, thay `OWNER/REPOSITORY` trong
-`content/manifest.json` bằng GitHub owner và repository thật.
+Manifest trỏ tới `levels` trong repository GitHub này. Số entry trong manifest
+luôn bằng số file `levels/level_<number>.json` thực tế.
 
 ## Chạy với GitHub
 
@@ -30,13 +31,47 @@ Với Flutter, truyền giá trị này bằng `--dart-define=LEVEL_MANIFEST_URL
 Không commit token hoặc URL cần xác thực; repository content nên public để
 GitHub Raw CDN phục vụ được trên mobile.
 
-## Thêm hoặc sửa màn chơi
+## Tạo level và manifest
 
-1. Thêm/sửa JSON trong `assets/levels` theo schema hiện tại.
-2. Tính lại SHA-256 và byte size của file sau khi lưu.
-3. Thêm/cập nhật entry trong `content/manifest.json`.
-4. Tăng `catalogVersion` khi catalog thay đổi.
-5. Push cả manifest và level JSON lên cùng branch/tag.
+Chạy từ thư mục repo này:
+
+```text
+cargo run -- --seed 1234
+```
+
+Tool tự tìm số level lớn nhất đang có rồi ghi level tiếp theo. Ví dụ đang có
+`level_1.json` đến `level_10.json` thì lệnh trên ghi `levels/level_11.json`.
+Sau đó tool validate toàn bộ level trong `levels/`,
+rồi cập nhật `manifest.json` với `id`, `order`, URL GitHub, SHA-256 và byte
+size. Có thể đổi vị trí bằng `--levels-dir`, `--manifest` hoặc đổi URL bằng
+`--base-url`.
+
+Dùng `--level N` nếu cần chủ động ghi một số level cụ thể; mặc định luôn là
+level mới tiếp theo.
+
+Để chỉ validate các file đang có và tạo lại manifest, không sinh level mới:
+
+```text
+cargo run -- --manifest-only
+```
+
+## Schema level bắt buộc
+
+Mỗi file phải có `level`, `maxMoves`, `targetColor`, `colors` và `grid`.
+
+- Tên file phải là `level_<số>.json` và `level` phải trùng số đó.
+- `maxMoves` và grid phải lớn hơn 0; grid phải chữ nhật.
+- `colors` phải có key liên tục từ `1`, mã màu dạng `#RRGGBB` hoặc `#AARRGGBB`.
+- `targetColor` và mọi ô trong grid phải nằm trong palette màu.
+
+Nếu một file sai schema, tool dừng và không ghi manifest mới.
+
+## Publish
+
+1. Chạy tool để cập nhật manifest.
+2. Kiểm tra `manifest.json` và các file trong `levels/`.
+3. Push cả manifest và level JSON lên branch mà URL manifest sử dụng.
+4. App Flutter tải manifest, kiểm tra SHA-256 rồi cache level để dùng offline.
 
 Nếu manifest hoặc một level lỗi, app giữ bundled level và cache hợp lệ gần
 nhất thay vì làm hỏng toàn bộ catalog.
