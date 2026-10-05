@@ -68,6 +68,10 @@ level mới tiếp theo.
 | `--catalog-version N` | `1` | Phiên bản catalog ghi vào manifest. |
 | `--manifest-only` | tắt | Chỉ validate level hiện có và tạo lại manifest. |
 
+Mỗi lần lặp đặt một template có thể chồng lên các layer trước đó, nhưng phải
+làm thay đổi ít nhất một ô. Cách này tạo ra các vùng màu đan xen và level khó
+hơn thay vì chỉ tạo các mảng màu rời nhau trên nền target.
+
 Tạo một level:
 
 ```text

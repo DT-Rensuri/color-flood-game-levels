@@ -191,19 +191,12 @@ fn generate_level(templates: &[Template], options: &Options, level: u32, seed: u
         // ----------------------------------------------------
         // Tìm template + vị trí hợp lệ.
         //
-        // Vị trí hợp lệ nghĩa là:
-        // TẤT CẢ cell của template đều đang là target.
+        // Vị trí hợp lệ nghĩa là template đổi ít nhất một ô.
         //
-        // Như vậy template mới luôn "ăn" hoàn toàn vào
-        // vùng target hiện tại.
+        // Template vẫn có thể chồng lên các layer cũ.
         // ----------------------------------------------------
-        let candidates = find_placement_candidates(
-            &grid,
-            templates,
-            target_color,
-            options.width,
-            options.height,
-        );
+        let candidates =
+            find_placement_candidates(&grid, templates, color, options.width, options.height);
 
         if candidates.is_empty() {
             // Không còn vị trí nào để đặt template.
@@ -340,29 +333,13 @@ struct PlacementCandidate {
 
 /// Tìm tất cả vị trí có thể đặt template.
 ///
-/// Điều kiện:
-///
-/// 1. Template phải nằm hoàn toàn trong grid.
-/// 2. Mọi cell != 0 của template phải đang là target.
-///
-/// Ví dụ:
-///
-/// Template:
-///
-///     X X
-///     X X
-///
-/// Grid:
-///
-///     4 4 4 4
-///     4 4 2 4
-///     4 4 4 4
-///
-/// Không được đặt lên vùng có `2`.
+/// Template được phép chồng lên các layer cũ. Điều kiện duy nhất ngoài việc
+/// nằm trong grid là ít nhất một cell phải thực sự đổi màu; nhờ vậy mỗi layer
+/// đều tạo ra thay đổi và level có thể có các hình dạng đan xen phức tạp hơn.
 fn find_placement_candidates(
     grid: &[Vec<u8>],
     templates: &[Template],
-    target_color: u8,
+    paint_color: u8,
     width: usize,
     height: usize,
 ) -> Vec<PlacementCandidate> {
@@ -379,7 +356,7 @@ fn find_placement_candidates(
 
         for start_y in 0..=max_y {
             for start_x in 0..=max_x {
-                if can_place_template(grid, &template.cells, target_color, start_x, start_y) {
+                if can_place_template(grid, &template.cells, paint_color, start_x, start_y) {
                     candidates.push(PlacementCandidate {
                         template_index,
                         start_x,
@@ -393,17 +370,17 @@ fn find_placement_candidates(
     candidates
 }
 
-/// Kiểm tra template có nằm hoàn toàn trên target không.
+/// Kiểm tra template có ít nhất một cell sẽ đổi màu.
 fn can_place_template(
     grid: &[Vec<u8>],
     template: &[Cell],
-    target_color: u8,
+    paint_color: u8,
     start_x: usize,
     start_y: usize,
 ) -> bool {
     template
         .iter()
-        .all(|cell| grid[start_y + cell.y][start_x + cell.x] == target_color)
+        .any(|cell| grid[start_y + cell.y][start_x + cell.x] != paint_color)
 }
 
 /// Paint template tại vị trí đã xác định.
@@ -923,7 +900,7 @@ fn print_help() {
 
 #[cfg(test)]
 mod tests {
-    use super::{adjacent_colors, color_for_iteration};
+    use super::{Cell, adjacent_colors, can_place_template, color_for_iteration};
 
     #[test]
     fn target_four_sequence() {
@@ -979,5 +956,21 @@ mod tests {
     #[test]
     fn adjacent_colors_for_target_one() {
         assert_eq!(adjacent_colors(1, 4), vec![4, 3, 2]);
+    }
+
+    #[test]
+    fn placement_allows_overlap_when_a_cell_changes() {
+        let grid = vec![vec![1, 2]];
+        let template = vec![Cell { x: 0, y: 0 }, Cell { x: 1, y: 0 }];
+
+        assert!(can_place_template(&grid, &template, 1, 0, 0));
+    }
+
+    #[test]
+    fn placement_rejects_a_noop_layer() {
+        let grid = vec![vec![1, 1]];
+        let template = vec![Cell { x: 0, y: 0 }, Cell { x: 1, y: 0 }];
+
+        assert!(!can_place_template(&grid, &template, 1, 0, 0));
     }
 }
