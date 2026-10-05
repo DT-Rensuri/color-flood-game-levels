@@ -12,6 +12,8 @@ const DEFAULT_WIDTH: usize = 10;
 const DEFAULT_HEIGHT: usize = 8;
 const DEFAULT_REPEATS: usize = 6;
 const DEFAULT_TARGET_COLOR: u8 = 4;
+const COLOR_COUNT: u8 = 4;
+const NON_TARGET_LOOPS_BEFORE_TARGET: usize = 2;
 
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -84,13 +86,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let seed = options.seed.unwrap_or_else(random_seed);
     let mut rng = StdRng::seed_from_u64(seed);
     let mut grid: Vec<Vec<u8>> = vec![vec![options.target_color; options.width]; options.height];
-    let available_colors: Vec<u8> = (1..=4)
-        .filter(|color| *color != options.target_color)
-        .collect();
-
-    for _ in 0..options.repeats {
+    for iteration in 0..options.repeats {
         let template = &templates[rng.random_range(0..templates.len())];
-        let color = available_colors[rng.random_range(0..available_colors.len())];
+        let color = color_for_iteration(iteration, options.target_color, COLOR_COUNT);
         paint_template(
             &mut grid,
             &template.cells,
@@ -208,7 +206,7 @@ impl Options {
         if options.width == 0 || options.height == 0 {
             return Err("width and height must be greater than zero".into());
         }
-        if !(1..=4).contains(&options.target_color) {
+        if !(1..=COLOR_COUNT).contains(&options.target_color) {
             return Err("target-color must be between 1 and 4".into());
         }
         if options.level_explicit && options.level == 0 {
@@ -387,6 +385,31 @@ fn valid_hex_color(value: &str) -> bool {
         && value.chars().all(|character| character.is_ascii_hexdigit())
 }
 
+/// Select colors in a predictable cycle while returning to the target after
+/// exactly two non-target iterations.
+///
+/// For target color 4, the sequence starts as:
+/// `1, 2, 4, 3, 1, 4, 2, 3, 4, ...`.
+fn color_for_iteration(iteration: usize, target_color: u8, color_count: u8) -> u8 {
+    let available_colors: Vec<u8> = (1..=color_count)
+        .filter(|color| *color != target_color)
+        .collect();
+    assert!(
+        !available_colors.is_empty(),
+        "at least two colors are required"
+    );
+
+    let cycle_length = NON_TARGET_LOOPS_BEFORE_TARGET + 1;
+    let cycle_position = iteration % cycle_length;
+    if cycle_position == NON_TARGET_LOOPS_BEFORE_TARGET {
+        return target_color;
+    }
+
+    let non_target_iteration =
+        (iteration / cycle_length) * NON_TARGET_LOOPS_BEFORE_TARGET + cycle_position;
+    available_colors[non_target_iteration % available_colors.len()]
+}
+
 fn load_templates(directory: &PathBuf) -> Result<Vec<Template>, Box<dyn std::error::Error>> {
     let mut paths = fs::read_dir(directory)?
         .filter_map(|entry| entry.ok().map(|entry| entry.path()))
@@ -482,4 +505,27 @@ fn print_help() {
     println!("         --templates-dir PATH --levels-dir PATH");
     println!("         --manifest PATH --base-url URL --catalog-version N");
     println!("         --manifest-only");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::color_for_iteration;
+
+    #[test]
+    fn target_returns_after_two_non_target_iterations() {
+        let colors: Vec<u8> = (0..9)
+            .map(|iteration| color_for_iteration(iteration, 4, 4))
+            .collect();
+
+        assert_eq!(colors, vec![1, 2, 4, 3, 1, 4, 2, 3, 4]);
+    }
+
+    #[test]
+    fn cycle_adapts_when_target_is_not_the_last_color() {
+        let colors: Vec<u8> = (0..6)
+            .map(|iteration| color_for_iteration(iteration, 1, 4))
+            .collect();
+
+        assert_eq!(colors, vec![2, 3, 1, 4, 2, 1]);
+    }
 }
