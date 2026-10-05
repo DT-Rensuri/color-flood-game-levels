@@ -51,6 +51,7 @@ struct Template {
     cells: Vec<Cell>,
     width: usize,
     height: usize,
+    path: PathBuf,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -65,15 +66,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
     let templates = load_templates(&options.templates_dir)?;
-    if templates
+    if let Some(invalid_template) = templates
         .iter()
-        .any(|template| template.width > options.width || template.height > options.height)
+        .find(|t| t.width > options.width || t.height > options.height)
     {
         return Err(format!(
-            "At least one template in {} is larger than the {}x{} grid",
+            "Template '{}' ({x}x{y}) in {} is larger than the {}x{} grid",
+            invalid_template.path.display(),
             options.templates_dir.display(),
             options.width,
-            options.height
+            options.height,
+            x = invalid_template.width,
+            y = invalid_template.height,
         )
         .into());
     }
@@ -432,6 +436,7 @@ fn load_templates(directory: &PathBuf) -> Result<Vec<Template>, Box<dyn std::err
                 cells,
                 width,
                 height,
+                path,
             })
         })
         .collect()

@@ -6,7 +6,7 @@
       "id": "level_1",
       "order": 1,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_1.json",
-      "sha256": "b147bd5984edcbf721f3c8b06b3d10cddd6687483524ac2d85a39d626d5172ad",
+      "sha256": "94543938acb70679af9ce83afda252d019d8d6c126d0a973b2c639d0d544cc53",
       "size": 983,
       "enabled": true
     },
@@ -14,7 +14,7 @@
       "id": "level_2",
       "order": 2,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_2.json",
-      "sha256": "2cb5f54376d2aaf112b0e3b00b86d803ef41ee8867c3dbe81fe0576748f79fe7",
+      "sha256": "bba99acaa2cf1980ce170a16d1d96ed32ba9d5e18d044f6e5f5762e7bcdb9883",
       "size": 983,
       "enabled": true
     },
@@ -22,7 +22,7 @@
       "id": "level_3",
       "order": 3,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_3.json",
-      "sha256": "15b79a1640bc90dd272c40352bb71e43bdf64b14003fbc967835b389ef4eec52",
+      "sha256": "f360a298b52dcb18705f8af06647903f673f53fda25208b26cd8db25924b47ab",
       "size": 983,
       "enabled": true
     },
@@ -30,7 +30,7 @@
       "id": "level_4",
       "order": 4,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_4.json",
-      "sha256": "37934884e68c0a79f79f6db17ba4016c111abba68aeb67a244afc019527cdfb0",
+      "sha256": "c1dc17e0f1af08a170c2a784d54d843039d140c65aa46e19b6c22ee7121ac8aa",
       "size": 983,
       "enabled": true
     },
@@ -38,7 +38,7 @@
       "id": "level_5",
       "order": 5,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_5.json",
-      "sha256": "7c428895842e9ec5074d45f7c845670af9e39b958592b1997026d42971e13a5b",
+      "sha256": "307615f199c434ea128632274765af0a3c4d727a5e6b246f47affaf415615629",
       "size": 983,
       "enabled": true
     },
@@ -46,7 +46,7 @@
       "id": "level_6",
       "order": 6,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_6.json",
-      "sha256": "eb8f8a071057956338f70cbb16046835b792a6718e8d14d5a530a847c288300b",
+      "sha256": "e671acc54d95fee7e86605ba4ff0374a5529513192c3aa277cfb6f9a34c5981f",
       "size": 983,
       "enabled": true
     },
@@ -54,7 +54,7 @@
       "id": "level_7",
       "order": 7,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_7.json",
-      "sha256": "6f3ee158764c36d86d084ad3c2cb9cd9b6d81011470befccc4f904b10227b396",
+      "sha256": "a278d81b130e01a16edfd72f81c24a960ca8ab12d7c960e09db670171c8400a7",
       "size": 983,
       "enabled": true
     },
@@ -62,7 +62,7 @@
       "id": "level_8",
       "order": 8,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_8.json",
-      "sha256": "12b28bb1646e404bced31d40904fac8584b9316eb9473138405b2db1c522c53e",
+      "sha256": "fa281741b8dc8e0246276f1cbaea9f582d3a332e44be9d08281b461f68d4f8e7",
       "size": 983,
       "enabled": true
     },
@@ -70,7 +70,7 @@
       "id": "level_9",
       "order": 9,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_9.json",
-      "sha256": "c0862762a86b8a144b5ae2bdc52ba6f769472c24865f28f610290ef8bb857ee2",
+      "sha256": "b97516e27f04f01fe3f36d6a3deed9eb88e10e1f7792dc57a76367952a79a1bd",
       "size": 983,
       "enabled": true
     },
@@ -78,7 +78,7 @@
       "id": "level_10",
       "order": 10,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_10.json",
-      "sha256": "6616284af8cf8f6263f2aeeb049491261e467509835ffabbd4b773c572755b05",
+      "sha256": "9aa06da20eeb3653ad0f985e543617a1724642a424c981eea776ace204c06c2f",
       "size": 984,
       "enabled": true
     },
@@ -86,7 +86,7 @@
       "id": "level_11",
       "order": 11,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_11.json",
-      "sha256": "080736edc4255eb95ab3fa9411ee2efa8629ad7e1d01eaa769a76e586ba589e4",
+      "sha256": "d019a337321ae396c61e915ae64e0cce60cd77910ade42ff47174756c5d1b59e",
       "size": 984,
       "enabled": true
     },
@@ -94,7 +94,7 @@
       "id": "level_12",
       "order": 12,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_12.json",
-      "sha256": "08f8da3a33a76189a1d9f31657c0341ae61747600c324c722079bbb0e63a4632",
+      "sha256": "323f56da2c383c7efe31a95a38241bee63f39cb9af281c118e07f0cf9313f2d2",
       "size": 984,
       "enabled": true
     },
@@ -102,7 +102,7 @@
       "id": "level_13",
       "order": 13,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_13.json",
-      "sha256": "2453b39e4ca1acaf00e40bb5b5dc706f45d127aadfaf4ece3903c1279a07fd37",
+      "sha256": "af2e4485fd1fdf3defe030cc427f3e3beb4dd3a03b2d6f3c4b8b62433a34a329",
       "size": 984,
       "enabled": true
     },
@@ -110,7 +110,7 @@
       "id": "level_14",
       "order": 14,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_14.json",
-      "sha256": "14e409a6ef642682538a3831ddb902d159fc9e2669f498b204946eaf458a7baa",
+      "sha256": "02422d70831fa0bd6db20a59599ce80a4638d83dc0f21c141cfaa6a250bf8f4b",
       "size": 984,
       "enabled": true
     },
@@ -118,7 +118,7 @@
       "id": "level_15",
       "order": 15,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_15.json",
-      "sha256": "78d5142395ee561333738a464fa527e4192de10ba7e1d7c543d4f942f89662ce",
+      "sha256": "56bfcba19d568717f27859b4323df6179e9fc3c230d3452b54feaba13c585b89",
       "size": 984,
       "enabled": true
     },
@@ -126,7 +126,7 @@
       "id": "level_16",
       "order": 16,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_16.json",
-      "sha256": "f194aab35bfc2b82710ea37598d4c2dd61bb0ecef56fcfe58ce46e38c42552b3",
+      "sha256": "20bcb1308a14e2b18f845fe17e6345e0229e5626a78c4154dfea11c89f6ea77a",
       "size": 984,
       "enabled": true
     },
@@ -134,7 +134,7 @@
       "id": "level_17",
       "order": 17,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_17.json",
-      "sha256": "1689e66004cf21a5fa8c494858ea9d984cac315b2f02372a64c8dad33349cd18",
+      "sha256": "0c70fd6c21e3b7eac678610f5b376e5ae2b4845b69d5ab8c2281886249c307a0",
       "size": 984,
       "enabled": true
     },
@@ -142,7 +142,7 @@
       "id": "level_18",
       "order": 18,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_18.json",
-      "sha256": "29d641b7207dc8455836e71cc5c1fd58ff83357e40d277225d5c5d1b41bf9deb",
+      "sha256": "e2c1880a33714e48ca5afb208eae51dc3ecd837638419276701c8cd5ab31035a",
       "size": 984,
       "enabled": true
     },
@@ -150,7 +150,7 @@
       "id": "level_19",
       "order": 19,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_19.json",
-      "sha256": "e0f45282dc0926b408b61e0b6d7ea849db5cc37262890a5c94ec762864a99ff5",
+      "sha256": "fdee5cdf382243ca798d3c4fa7824dbe6aa09e702972b3772b96fd5ac045c95e",
       "size": 984,
       "enabled": true
     },
@@ -158,7 +158,7 @@
       "id": "level_20",
       "order": 20,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_20.json",
-      "sha256": "7fb619ea3abf63c3ea01d33a2674cba7974971d6c28a5ec643ab9b21c9e505d1",
+      "sha256": "1ea661ed3c442a6c497f0655409ee8b090a56b6abb9db9fe169ff707fb1932dc",
       "size": 984,
       "enabled": true
     },
@@ -166,7 +166,7 @@
       "id": "level_21",
       "order": 21,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_21.json",
-      "sha256": "ecab9877b565eb57f69880c305017546b0f49aeaab58722cdd778f3e6a5d15a4",
+      "sha256": "b28138205f33262bfeff6e970d612786343e9174eb35ca7a3160fed6e45451fc",
       "size": 984,
       "enabled": true
     },
@@ -174,7 +174,7 @@
       "id": "level_22",
       "order": 22,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_22.json",
-      "sha256": "f85bb95b2ad3c9af80baf0f688538390bed72aeff697d62cd1660e5d24683cd0",
+      "sha256": "24fe3eec5dbbe91bf78ee234eaba6767643244ac43cea840056bdbe2f5c1c3fc",
       "size": 984,
       "enabled": true
     },
@@ -182,7 +182,7 @@
       "id": "level_23",
       "order": 23,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_23.json",
-      "sha256": "418c9c87e3312f2955213145f52c24847e7c1612c4d5ceafeeffa80dbf3f1639",
+      "sha256": "abca58a682512ae1839089c77a0b046b159c8b6eebced2664d4994ff471c7a4c",
       "size": 984,
       "enabled": true
     },
@@ -190,7 +190,7 @@
       "id": "level_24",
       "order": 24,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_24.json",
-      "sha256": "ecb24a0cd79391507b3bed5b2f4b133cad5579cc42847214313842ff40fe41dc",
+      "sha256": "1f5c67d9551623fa77a30f25aae1ae72aa3b1ede63e3ea16e6ec2353ec15a8e4",
       "size": 984,
       "enabled": true
     },
@@ -198,7 +198,7 @@
       "id": "level_25",
       "order": 25,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_25.json",
-      "sha256": "3bef8bfb0e6ba3f290a191ca02a669643952f21450a2dc60b0b72665fdf592a3",
+      "sha256": "fc5440c848479ccb87b39d9053ab28b59990dc85e9ae32c989aa5747a72f7419",
       "size": 984,
       "enabled": true
     },
@@ -206,7 +206,7 @@
       "id": "level_26",
       "order": 26,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_26.json",
-      "sha256": "49426f736d8c7d0d81403528486fb67474002057e8a2a01050bb76af71a265d6",
+      "sha256": "0a33c2914869e702f9e6811dd8a159f527e0fcc286191c5c05b6b6b488d877ba",
       "size": 984,
       "enabled": true
     },
@@ -214,7 +214,7 @@
       "id": "level_27",
       "order": 27,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_27.json",
-      "sha256": "d30c5d430fdc691b6cb41fd773026622d6d42065fd5766e469aa6cc8ca2f041c",
+      "sha256": "38327918f48ff1d1ade0dc769836d5ff3e96c6980df2fa1f0960c6819ed7a6e0",
       "size": 984,
       "enabled": true
     },
@@ -222,7 +222,7 @@
       "id": "level_28",
       "order": 28,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_28.json",
-      "sha256": "6c52f6cec6ddc683bd3f961e9fdeb18d10340db3dc437146d1bf96ca6fe0ad34",
+      "sha256": "10bfb923de128723b51824dd04bcdf7e5e0c871a1ccc3e2cec8942cb2e79ad14",
       "size": 984,
       "enabled": true
     },
@@ -230,7 +230,7 @@
       "id": "level_29",
       "order": 29,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_29.json",
-      "sha256": "076f690fc1cffc970205879cd68a3a697cfbd253b707fa2aaf5d679a8564733c",
+      "sha256": "cdffcdbc31597bc02bd3356d1748637609ba65812c64a1991b55b956755061ae",
       "size": 984,
       "enabled": true
     },
@@ -238,7 +238,7 @@
       "id": "level_30",
       "order": 30,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_30.json",
-      "sha256": "a6ef104a84e1f2ee840ecb646503b0c8ed2d07d74e1c795e18dab8dd1c5cdead",
+      "sha256": "a0c20bae6d3c27402cd14b6fa7d87b57316b11b89960d0835395608ea5de2441",
       "size": 984,
       "enabled": true
     },
@@ -246,7 +246,7 @@
       "id": "level_31",
       "order": 31,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_31.json",
-      "sha256": "5eeb793a37f99c530b6f42110f5343caf84e7e056bb3803f6b37c0bfd07b59a4",
+      "sha256": "58d737aea96fb2d1ac6fdd9a4686634ea9aec7eb4d28e924775de8464ef29f84",
       "size": 984,
       "enabled": true
     },
@@ -254,7 +254,7 @@
       "id": "level_32",
       "order": 32,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_32.json",
-      "sha256": "31ee5f0a9e5fdbdcf7e281d796671dd998ba3464978e6c9857ea8ffe6532ff66",
+      "sha256": "50b53cfba6471b874cfba5b1467b6f55a80c798334690142471edb565af32dca",
       "size": 984,
       "enabled": true
     },
@@ -262,7 +262,7 @@
       "id": "level_33",
       "order": 33,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_33.json",
-      "sha256": "ae57a89562abdc5e71ca9e8c04cf5e8ebc31ac532b76b1107a795c59a7c95355",
+      "sha256": "d52a9bbe247280fbdee19fb7ef9e0b3d41684e9fd9f695bc0257496750f96515",
       "size": 984,
       "enabled": true
     },
@@ -270,7 +270,7 @@
       "id": "level_34",
       "order": 34,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_34.json",
-      "sha256": "25643f72ec314696c97768dc8bf3c04bccd0cae2e54f101888f2e228249663c3",
+      "sha256": "364d3d5573d7b118536d9d76a2fc02742105a8b588d3bbe17087131a79d99d41",
       "size": 984,
       "enabled": true
     },
@@ -278,7 +278,7 @@
       "id": "level_35",
       "order": 35,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_35.json",
-      "sha256": "a86b0e30208f0fc3061d4fd3d114685829d5d9c68c09d58711ea7a8c191ed3e3",
+      "sha256": "5dbdf5eea78bae40935f17828688333fa2191fdfb65c32e57ccfecb6b826e06c",
       "size": 984,
       "enabled": true
     },
@@ -286,127 +286,7 @@
       "id": "level_36",
       "order": 36,
       "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_36.json",
-      "sha256": "b6c5954144d0984eef91f99a6622fa2d61db991b511c7f147996feaccf2bb802",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_37",
-      "order": 37,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_37.json",
-      "sha256": "26cf9641c5200f8c436ba55241aa38bebf4aacb5bb5607d85a8b60741e255421",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_38",
-      "order": 38,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_38.json",
-      "sha256": "296b7d4babf616dc301d0e3bff2dce4c270bda3b2f6aa852108c9597c1148de4",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_39",
-      "order": 39,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_39.json",
-      "sha256": "4ff59d8a7efbd2872f8a1b35add92ceaff272d3969e7080a2f7a120400bd9af1",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_40",
-      "order": 40,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_40.json",
-      "sha256": "11a3b8572b8d522400a67adeda365b6c63e2e79ddb0e23f4ceaf0cabd57e9c06",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_41",
-      "order": 41,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_41.json",
-      "sha256": "82b34f9fe93bb9f9a8a1f988a61f97a34e2a24349e5b709d113978e3673fd531",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_42",
-      "order": 42,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_42.json",
-      "sha256": "0b043df1620cca52ee6ce61147bd13de228e1765763375f012b7400dddb770d5",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_43",
-      "order": 43,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_43.json",
-      "sha256": "660b2f4c5b3316f4912cc0f025d2126fca8b6ba6ddefc9427ad554a7a65abd37",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_44",
-      "order": 44,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_44.json",
-      "sha256": "a184557ffbcc035963d42266f8fab370bc95059af804e9bd7d65b8c65882f147",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_45",
-      "order": 45,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_45.json",
-      "sha256": "0de4c1a6cfd3115b4c7dffc773d1e038ad15dfaf1a6da0ecd89936f5aab52195",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_46",
-      "order": 46,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_46.json",
-      "sha256": "ad9d1795e944291f2568de7e5784d06d1a4e253177a4cfadda5fd27e95d4c865",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_47",
-      "order": 47,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_47.json",
-      "sha256": "4cdf30282b7304fc67cd44f911dd4bcdeab6be1f947a60a37f8d23c8c193aef4",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_48",
-      "order": 48,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_48.json",
-      "sha256": "3a1dd490359ad053e22d11d4cc65733cf1ab372df666e98f25130d5ac50788a9",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_49",
-      "order": 49,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_49.json",
-      "sha256": "5fedf9bbc4add13816842aa1b87480a926550645c24e14e4121ac7c14cb4dac7",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_50",
-      "order": 50,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_50.json",
-      "sha256": "9e53053e54f7b403e2a0e96709e0f7d0fa072c9ffb980c3f04196e4cd18072f2",
-      "size": 984,
-      "enabled": true
-    },
-    {
-      "id": "level_51",
-      "order": 51,
-      "url": "https://raw.githubusercontent.com/DT-Rensuri/color-flood-game-levels/main/levels/level_51.json",
-      "sha256": "2db1ca4707953b1bc5c9256b5739618428af0128eccaff13eeb2273ff5a74a1b",
+      "sha256": "baad0fde57b855575f7786f670492c8d568d5a8fae42128521ec36f14751d24a",
       "size": 984,
       "enabled": true
     }
