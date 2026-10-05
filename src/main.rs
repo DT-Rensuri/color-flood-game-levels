@@ -13,6 +13,8 @@ const DEFAULT_HEIGHT: usize = 8;
 const DEFAULT_REPEATS: usize = 6;
 const DEFAULT_TARGET_COLOR: u8 = 4;
 const COLOR_COUNT: u8 = 4;
+
+// Sau 2 vòng non-target thì vòng tiếp theo được phép dùng target.
 const NON_TARGET_LOOPS_BEFORE_TARGET: usize = 2;
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -58,6 +60,7 @@ struct Template {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let options = Options::from_args()?;
+
     if options.manifest_only {
         update_manifest(
             &options.levels_dir,
@@ -65,9 +68,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &options.base_url,
             options.catalog_version,
         )?;
+
         return Ok(());
     }
+
     let templates = load_templates(&options.templates_dir)?;
+
     if let Some(invalid_template) = templates
         .iter()
         .find(|t| t.width > options.width || t.height > options.height)
@@ -83,17 +89,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .into());
     }
+
     let base_seed = options.seed.unwrap_or_else(random_seed);
+
     for offset in 0..options.count {
         let offset_u32 = u32::try_from(offset).map_err(|_| "count exceeds u32 range")?;
+
         let level_number = options
             .level
             .checked_add(offset_u32)
             .ok_or("level number overflowed")?;
+
         let seed = base_seed
             .checked_add(offset as u64)
             .ok_or("seed overflowed while generating levels")?;
+
         let level = generate_level(&templates, &options, level_number, seed);
+
         let output = if options.count == 1 && options.output_explicit {
             options.output.clone()
         } else {
@@ -101,56 +113,315 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .levels_dir
                 .join(format!("level_{level_number}.json"))
         };
+
         if let Some(parent) = output.parent() {
             if !parent.as_os_str().is_empty() {
                 fs::create_dir_all(parent)?;
             }
         }
+
         fs::write(&output, serde_json::to_vec_pretty(&level)?)?;
+
         println!(
-            "Generated {} (level {}, seed {}, maxMoves {})",
+            "Generated {} (level {}, seed {}, targetColor {}, maxMoves {})",
             output.display(),
             level_number,
             seed,
+            level.target_color,
             level.max_moves
         );
     }
+
     update_manifest(
         &options.levels_dir,
         &options.manifest,
         &options.base_url,
         options.catalog_version,
     )?;
+
     println!("Updated manifest {}", options.manifest.display());
+
     Ok(())
 }
 
+// ============================================================
+// LEVEL GENERATION
+// ============================================================
+
 fn generate_level(templates: &[Template], options: &Options, level: u32, seed: u64) -> Level {
     let mut rng = StdRng::seed_from_u64(seed);
-    let mut grid: Vec<Vec<u8>> = vec![vec![options.target_color; options.width]; options.height];
+
+    // --------------------------------------------------------
+    // BƯỚC 1:
+    // Random target color.
+    //
+    // Nếu muốn ép target từ CLI thì vẫn có thể dùng
+    // --target-color.
+    //
+    // Nhưng mặc định target sẽ random.
+    // --------------------------------------------------------
+    let target_color = if options.target_color_random {
+        rng.random_range(1..=COLOR_COUNT)
+    } else {
+        options.target_color
+    };
+
+    // --------------------------------------------------------
+    // BƯỚC 2:
+    // Khởi tạo toàn bộ grid bằng target.
+    // --------------------------------------------------------
+    let mut grid: Vec<Vec<u8>> = vec![vec![target_color; options.width]; options.height];
+
+    // --------------------------------------------------------
+    // BƯỚC 3:
+    // Mỗi iteration:
+    //
+    //   0 -> non-target
+    //   1 -> non-target
+    //   2 -> target
+    //   3 -> non-target
+    //   4 -> non-target
+    //   5 -> target
+    //
+    // ...
+    // --------------------------------------------------------
     for iteration in 0..options.repeats {
-        let template = &templates[rng.random_range(0..templates.len())];
-        let color = color_for_iteration(iteration, options.target_color, COLOR_COUNT);
-        paint_template(
-            &mut grid,
-            &template.cells,
-            color,
-            &mut rng,
+        let color = color_for_iteration(iteration, target_color, COLOR_COUNT);
+
+        // ----------------------------------------------------
+        // Tìm template + vị trí hợp lệ.
+        //
+        // Vị trí hợp lệ nghĩa là:
+        // TẤT CẢ cell của template đều đang là target.
+        //
+        // Như vậy template mới luôn "ăn" hoàn toàn vào
+        // vùng target hiện tại.
+        // ----------------------------------------------------
+        let candidates = find_placement_candidates(
+            &grid,
+            templates,
+            target_color,
             options.width,
             options.height,
-            template.width,
-            template.height,
+        );
+
+        if candidates.is_empty() {
+            // Không còn vị trí nào để đặt template.
+            //
+            // Không panic để tránh làm crash generator.
+            // Có thể dừng sớm.
+            eprintln!(
+                "Warning: no valid placement at iteration {} \
+                 for level {}. Stopping generation early.",
+                iteration, level
+            );
+
+            break;
+        }
+
+        // Random một candidate.
+        let candidate_index = rng.random_range(0..candidates.len());
+
+        let candidate = candidates[candidate_index];
+
+        // ----------------------------------------------------
+        // Tô template bằng màu đã chọn.
+        // ----------------------------------------------------
+        paint_template_at(
+            &mut grid,
+            &templates[candidate.template_index].cells,
+            color,
+            candidate.start_x,
+            candidate.start_y,
         );
     }
 
     Level {
         level,
         max_moves: options.repeats + 1,
-        target_color: options.target_color,
+        target_color,
         colors: color_palette(),
         grid,
     }
 }
+
+// ============================================================
+// COLOR LOGIC
+// ============================================================
+
+/// Chọn màu theo target.
+///
+/// Logic:
+///
+/// Target = 4:
+///     3, 2, 4, 1, 3, 4, 2, 1, 4...
+///
+/// Target = 3:
+///     2, 1, 3, 4, 2, 3, 1, 4, 3...
+///
+/// Quan trọng:
+/// - luôn có 2 màu non-target trước target
+/// - màu non-target được lấy theo thứ tự "liền kề"
+/// - target xuất hiện ở iteration thứ 3 của mỗi chu kỳ.
+fn color_for_iteration(iteration: usize, target_color: u8, color_count: u8) -> u8 {
+    let available_colors = adjacent_colors(target_color, color_count);
+
+    let cycle_length = NON_TARGET_LOOPS_BEFORE_TARGET + 1;
+
+    let cycle_position = iteration % cycle_length;
+
+    // Sau 2 vòng non-target -> target.
+    if cycle_position == NON_TARGET_LOOPS_BEFORE_TARGET {
+        return target_color;
+    }
+
+    // Tính index của non-target color.
+    let non_target_iteration =
+        (iteration / cycle_length) * NON_TARGET_LOOPS_BEFORE_TARGET + cycle_position;
+
+    available_colors[non_target_iteration % available_colors.len()]
+}
+
+/// Tạo danh sách màu quanh target.
+///
+/// Ví dụ target = 4:
+///
+///     [3, 2, 1]
+///
+/// target = 3:
+///
+///     [2, 1, 4]
+///
+/// target = 2:
+///
+///     [1, 4, 3]
+///
+/// target = 1:
+///
+///     [4, 3, 2]
+///
+/// Tức là bắt đầu từ màu ngay trước target,
+/// sau đó đi vòng xuống dưới và wrap lên trên.
+fn adjacent_colors(target_color: u8, color_count: u8) -> Vec<u8> {
+    let mut colors = Vec::new();
+
+    // Màu liền trước target.
+    if target_color > 1 {
+        for color in (1..target_color).rev() {
+            colors.push(color);
+        }
+    }
+
+    // Wrap sang màu lớn nhất.
+    if target_color < color_count {
+        for color in (target_color + 1..=color_count).rev() {
+            colors.push(color);
+        }
+    }
+
+    // Fallback an toàn.
+    if colors.is_empty() {
+        colors.push(target_color);
+    }
+
+    colors
+}
+
+// ============================================================
+// PLACEMENT LOGIC
+// ============================================================
+
+#[derive(Clone, Copy)]
+struct PlacementCandidate {
+    template_index: usize,
+    start_x: usize,
+    start_y: usize,
+}
+
+/// Tìm tất cả vị trí có thể đặt template.
+///
+/// Điều kiện:
+///
+/// 1. Template phải nằm hoàn toàn trong grid.
+/// 2. Mọi cell != 0 của template phải đang là target.
+///
+/// Ví dụ:
+///
+/// Template:
+///
+///     X X
+///     X X
+///
+/// Grid:
+///
+///     4 4 4 4
+///     4 4 2 4
+///     4 4 4 4
+///
+/// Không được đặt lên vùng có `2`.
+fn find_placement_candidates(
+    grid: &[Vec<u8>],
+    templates: &[Template],
+    target_color: u8,
+    width: usize,
+    height: usize,
+) -> Vec<PlacementCandidate> {
+    let mut candidates = Vec::new();
+
+    for (template_index, template) in templates.iter().enumerate() {
+        if template.width > width || template.height > height {
+            continue;
+        }
+
+        let max_x = width - template.width;
+
+        let max_y = height - template.height;
+
+        for start_y in 0..=max_y {
+            for start_x in 0..=max_x {
+                if can_place_template(grid, &template.cells, target_color, start_x, start_y) {
+                    candidates.push(PlacementCandidate {
+                        template_index,
+                        start_x,
+                        start_y,
+                    });
+                }
+            }
+        }
+    }
+
+    candidates
+}
+
+/// Kiểm tra template có nằm hoàn toàn trên target không.
+fn can_place_template(
+    grid: &[Vec<u8>],
+    template: &[Cell],
+    target_color: u8,
+    start_x: usize,
+    start_y: usize,
+) -> bool {
+    template
+        .iter()
+        .all(|cell| grid[start_y + cell.y][start_x + cell.x] == target_color)
+}
+
+/// Paint template tại vị trí đã xác định.
+fn paint_template_at(
+    grid: &mut [Vec<u8>],
+    template: &[Cell],
+    color: u8,
+    start_x: usize,
+    start_y: usize,
+) {
+    for cell in template {
+        grid[start_y + cell.y][start_x + cell.x] = color;
+    }
+}
+
+// ============================================================
+// OPTIONS
+// ============================================================
 
 struct Options {
     output: PathBuf,
@@ -159,7 +430,13 @@ struct Options {
     height: usize,
     repeats: usize,
     count: usize,
+
+    // Màu target mặc định.
     target_color: u8,
+
+    // true = random target.
+    target_color_random: bool,
+
     seed: Option<u64>,
     templates_dir: PathBuf,
     levels_dir: PathBuf,
@@ -180,7 +457,13 @@ impl Options {
             height: DEFAULT_HEIGHT,
             repeats: DEFAULT_REPEATS,
             count: 1,
+
+            // Giá trị mặc định vẫn là 4.
             target_color: DEFAULT_TARGET_COLOR,
+
+            // MẶC ĐỊNH: random target.
+            target_color_random: true,
+
             seed: None,
             templates_dir: PathBuf::from("templates"),
             levels_dir: PathBuf::from("levels"),
@@ -193,7 +476,9 @@ impl Options {
             output_explicit: false,
             level_explicit: false,
         };
+
         let mut args = env::args().skip(1);
+
         while let Some(argument) = args.next() {
             let mut value = || -> Result<String, String> {
                 args.next()
@@ -204,64 +489,129 @@ impl Options {
                     options.output = value()?.into();
                     options.output_explicit = true;
                 }
+
                 "--level" => {
                     options.level = value()?.parse()?;
                     options.level_explicit = true;
                 }
-                "--width" => options.width = value()?.parse()?,
-                "--height" => options.height = value()?.parse()?,
-                "--repeats" => options.repeats = value()?.parse()?,
-                "--count" => options.count = value()?.parse()?,
-                "--target-color" => options.target_color = value()?.parse()?,
-                "--seed" => options.seed = Some(value()?.parse()?),
-                "--templates-dir" => options.templates_dir = value()?.into(),
-                "--levels-dir" => options.levels_dir = value()?.into(),
-                "--manifest" => options.manifest = value()?.into(),
-                "--base-url" => options.base_url = value()?.trim_end_matches('/').to_owned(),
-                "--catalog-version" => options.catalog_version = value()?.parse()?,
-                "--manifest-only" => options.manifest_only = true,
+
+                "--width" => {
+                    options.width = value()?.parse()?;
+                }
+
+                "--height" => {
+                    options.height = value()?.parse()?;
+                }
+
+                "--repeats" => {
+                    options.repeats = value()?.parse()?;
+                }
+
+                "--count" => {
+                    options.count = value()?.parse()?;
+                }
+
+                "--target-color" => {
+                    options.target_color = value()?.parse()?;
+
+                    // Nếu user truyền target-color
+                    // thì không random.
+                    options.target_color_random = false;
+                }
+
+                "--random-target" => {
+                    options.target_color_random = true;
+                }
+
+                "--seed" => {
+                    options.seed = Some(value()?.parse()?);
+                }
+
+                "--templates-dir" => {
+                    options.templates_dir = value()?.into();
+                }
+
+                "--levels-dir" => {
+                    options.levels_dir = value()?.into();
+                }
+
+                "--manifest" => {
+                    options.manifest = value()?.into();
+                }
+
+                "--base-url" => {
+                    options.base_url = value()?.trim_end_matches('/').to_owned();
+                }
+
+                "--catalog-version" => {
+                    options.catalog_version = value()?.parse()?;
+                }
+
+                "--manifest-only" => {
+                    options.manifest_only = true;
+                }
+
                 "--help" | "-h" => {
                     print_help();
                     std::process::exit(0);
                 }
-                unknown => return Err(format!("Unknown argument: {unknown}").into()),
+
+                unknown => {
+                    return Err(format!("Unknown argument: {unknown}").into());
+                }
             }
         }
+
         if options.width == 0 || options.height == 0 {
             return Err("width and height must be greater than zero".into());
         }
+
         if options.count == 0 {
             return Err("count must be greater than zero".into());
         }
+
         if options.count > 1 && options.output_explicit {
             return Err("--output cannot be used with --count greater than 1".into());
         }
+
         if !(1..=COLOR_COUNT).contains(&options.target_color) {
             return Err("target-color must be between 1 and 4".into());
         }
+
         if options.level_explicit && options.level == 0 {
             return Err("level must be greater than zero".into());
         }
+
         if !options.level_explicit {
             options.level = next_level_number(&options.levels_dir)?;
         }
+
         let last_offset =
             u32::try_from(options.count - 1).map_err(|_| "count exceeds u32 range")?;
+
         options
             .level
             .checked_add(last_offset)
             .ok_or("level range overflowed")?;
+
         Ok(options)
     }
 }
 
+// ============================================================
+// LEVEL NUMBER
+// ============================================================
+
 fn next_level_number(levels_dir: &Path) -> Result<u32, Box<dyn std::error::Error>> {
     let mut highest = 0;
+
     if !levels_dir.exists() {
         return Ok(1);
     }
+
     for entry in fs::read_dir(levels_dir)? {
         let path = entry?.path();
+
         if path
             .extension()
             .is_some_and(|extension| extension == "json")
@@ -269,10 +619,15 @@ fn next_level_number(levels_dir: &Path) -> Result<u32, Box<dyn std::error::Error
             highest = highest.max(level_number_from_path(&path)?);
         }
     }
+
     highest
         .checked_add(1)
         .ok_or_else(|| "next level number overflowed".into())
 }
+
+// ============================================================
+// MANIFEST
+// ============================================================
 
 fn update_manifest(
     levels_dir: &Path,
@@ -288,22 +643,29 @@ fn update_manifest(
         })
         .map(|path| {
             let order = level_number_from_path(&path)?;
+
             Ok((order, path))
         })
         .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?;
+
     level_paths.sort_by_key(|(order, _)| *order);
 
     let mut entries = Vec::with_capacity(level_paths.len());
+
     for (order, path) in level_paths {
         let bytes = fs::read(&path)?;
+
         let level = parse_level(&bytes, &path)?;
+
         validate_level(&level, order, &path)?;
 
         let digest = Sha256::digest(&bytes);
+
         let sha256 = digest
             .iter()
             .map(|byte| format!("{byte:02x}"))
             .collect::<String>();
+
         entries.push(ManifestLevel {
             id: format!("level_{order}"),
             order,
@@ -319,18 +681,27 @@ fn update_manifest(
             fs::create_dir_all(parent)?;
         }
     }
+
     let manifest = Manifest {
         schema_version: 1,
         catalog_version,
         levels: entries,
     };
+
     fs::write(manifest_path, serde_json::to_vec_pretty(&manifest)?)?;
+
     println!("Manifest contains {} level(s)", manifest.levels.len());
+
     Ok(())
 }
 
+// ============================================================
+// PARSE / VALIDATE LEVEL
+// ============================================================
+
 fn parse_level(bytes: &[u8], path: &Path) -> Result<Level, Box<dyn std::error::Error>> {
     let json_bytes = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(bytes);
+
     serde_json::from_slice(json_bytes)
         .map_err(|error| format!("Invalid level {}: {error}", path.display()).into())
 }
@@ -340,6 +711,7 @@ fn level_number_from_path(path: &Path) -> Result<u32, Box<dyn std::error::Error>
         .file_stem()
         .and_then(|stem| stem.to_str())
         .ok_or_else(|| format!("Invalid level filename: {}", path.display()))?;
+
     let number = file_stem
         .strip_prefix("level_")
         .ok_or_else(|| {
@@ -355,9 +727,11 @@ fn level_number_from_path(path: &Path) -> Result<u32, Box<dyn std::error::Error>
                 path.display()
             )
         })?;
+
     if number == 0 {
         return Err(format!("Level number must be greater than zero: {}", path.display()).into());
     }
+
     Ok(number)
 }
 
@@ -375,30 +749,38 @@ fn validate_level(
         )
         .into());
     }
+
     if level.max_moves == 0 || level.colors.is_empty() {
         return Err(format!("{} has invalid maxMoves or empty colors", path.display()).into());
     }
 
     let color_count = level.colors.len();
+
     for index in 1..=color_count {
         let key = index.to_string();
+
         let color = level.colors.get(&key).ok_or_else(|| {
             format!(
                 "{} colors must use continuous keys starting at 1",
                 path.display()
             )
         })?;
+
         if !valid_hex_color(color) {
             return Err(format!("{} has invalid color {color}", path.display()).into());
         }
     }
+
     if !(1..=color_count as u8).contains(&level.target_color) {
         return Err(format!("{} has invalid targetColor", path.display()).into());
     }
+
     let width = level.grid.first().map_or(0, Vec::len);
+
     if width == 0 || level.grid.iter().any(|row| row.len() != width) {
         return Err(format!("{} grid must be non-empty and rectangular", path.display()).into());
     }
+
     if level
         .grid
         .iter()
@@ -407,40 +789,20 @@ fn validate_level(
     {
         return Err(format!("{} grid contains an unknown color", path.display()).into());
     }
+
     Ok(())
 }
 
 fn valid_hex_color(value: &str) -> bool {
     let value = value.strip_prefix('#').unwrap_or(value);
+
     (value.len() == 6 || value.len() == 8)
         && value.chars().all(|character| character.is_ascii_hexdigit())
 }
 
-/// Select colors in a predictable cycle while returning to the target after
-/// exactly two non-target iterations.
-///
-/// For target color 4, the sequence starts with its adjacent color:
-/// `3, 2, 4, 1, 3, 4, 2, 1, 4, ...`.
-fn color_for_iteration(iteration: usize, target_color: u8, color_count: u8) -> u8 {
-    let available_colors: Vec<u8> = (1..=color_count)
-        .rev()
-        .filter(|color| *color != target_color)
-        .collect();
-    assert!(
-        !available_colors.is_empty(),
-        "at least two colors are required"
-    );
-
-    let cycle_length = NON_TARGET_LOOPS_BEFORE_TARGET + 1;
-    let cycle_position = iteration % cycle_length;
-    if cycle_position == NON_TARGET_LOOPS_BEFORE_TARGET {
-        return target_color;
-    }
-
-    let non_target_iteration =
-        (iteration / cycle_length) * NON_TARGET_LOOPS_BEFORE_TARGET + cycle_position;
-    available_colors[non_target_iteration % available_colors.len()]
-}
+// ============================================================
+// LOAD TEMPLATES
+// ============================================================
 
 fn load_templates(directory: &PathBuf) -> Result<Vec<Template>, Box<dyn std::error::Error>> {
     let mut paths = fs::read_dir(directory)?
@@ -450,6 +812,7 @@ fn load_templates(directory: &PathBuf) -> Result<Vec<Template>, Box<dyn std::err
                 .is_some_and(|extension| extension == "json")
         })
         .collect::<Vec<_>>();
+
     paths.sort();
 
     if paths.is_empty() {
@@ -460,8 +823,11 @@ fn load_templates(directory: &PathBuf) -> Result<Vec<Template>, Box<dyn std::err
         .into_iter()
         .map(|path| {
             let matrix: Vec<Vec<u8>> = serde_json::from_reader(fs::File::open(&path)?)?;
+
             let height = matrix.len();
+
             let width = matrix.first().map_or(0, Vec::len);
+
             if width == 0 || height == 0 || matrix.iter().any(|row| row.len() != width) {
                 return Err(format!(
                     "Template {} must be a non-empty rectangular matrix",
@@ -479,6 +845,7 @@ fn load_templates(directory: &PathBuf) -> Result<Vec<Template>, Box<dyn std::err
                         .filter_map(move |(x, value)| (*value != 0).then_some(Cell { x, y }))
                 })
                 .collect::<Vec<_>>();
+
             if cells.is_empty() {
                 return Err(format!(
                     "Template {} must contain at least one non-zero cell",
@@ -497,22 +864,9 @@ fn load_templates(directory: &PathBuf) -> Result<Vec<Template>, Box<dyn std::err
         .collect()
 }
 
-fn paint_template(
-    grid: &mut [Vec<u8>],
-    template: &[Cell],
-    color: u8,
-    rng: &mut StdRng,
-    width: usize,
-    height: usize,
-    template_width: usize,
-    template_height: usize,
-) {
-    let start_x = rng.random_range(0..=width.saturating_sub(template_width));
-    let start_y = rng.random_range(0..=height.saturating_sub(template_height));
-    for cell in template {
-        grid[start_y + cell.y][start_x + cell.x] = color;
-    }
-}
+// ============================================================
+// COLOR PALETTE
+// ============================================================
 
 fn color_palette() -> BTreeMap<String, String> {
     BTreeMap::from([
@@ -523,6 +877,10 @@ fn color_palette() -> BTreeMap<String, String> {
     ])
 }
 
+// ============================================================
+// RANDOM SEED
+// ============================================================
+
 fn random_seed() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -530,22 +888,45 @@ fn random_seed() -> u64 {
         .unwrap_or(0)
 }
 
+// ============================================================
+// HELP
+// ============================================================
+
 fn print_help() {
     println!("Color Flood level generator");
+
     println!("Options: --output PATH --level N --count N");
+
     println!("         --width N --height N --repeats N");
-    println!("         --target-color 1..4 --seed N");
+
+    println!("         --target-color 1..4");
+
+    println!("         --random-target");
+
+    println!("         --seed N");
+
     println!("         --templates-dir PATH --levels-dir PATH");
+
     println!("         --manifest PATH --base-url URL --catalog-version N");
+
     println!("         --manifest-only");
+
+    println!();
+    println!("Default behavior: target color is random.");
+
+    println!("Use --target-color N to force a specific target.");
 }
+
+// ============================================================
+// TESTS
+// ============================================================
 
 #[cfg(test)]
 mod tests {
-    use super::color_for_iteration;
+    use super::{adjacent_colors, color_for_iteration};
 
     #[test]
-    fn target_returns_after_two_non_target_iterations() {
+    fn target_four_sequence() {
         let colors: Vec<u8> = (0..9)
             .map(|iteration| color_for_iteration(iteration, 4, 4))
             .collect();
@@ -554,11 +935,49 @@ mod tests {
     }
 
     #[test]
-    fn cycle_adapts_when_target_is_not_the_last_color() {
-        let colors: Vec<u8> = (0..6)
+    fn target_three_sequence() {
+        let colors: Vec<u8> = (0..9)
+            .map(|iteration| color_for_iteration(iteration, 3, 4))
+            .collect();
+
+        assert_eq!(colors, vec![2, 1, 3, 4, 2, 3, 1, 4, 3]);
+    }
+
+    #[test]
+    fn target_two_sequence() {
+        let colors: Vec<u8> = (0..9)
+            .map(|iteration| color_for_iteration(iteration, 2, 4))
+            .collect();
+
+        assert_eq!(colors, vec![1, 4, 2, 3, 1, 2, 4, 3, 2]);
+    }
+
+    #[test]
+    fn target_one_sequence() {
+        let colors: Vec<u8> = (0..9)
             .map(|iteration| color_for_iteration(iteration, 1, 4))
             .collect();
 
-        assert_eq!(colors, vec![4, 3, 1, 2, 4, 1]);
+        assert_eq!(colors, vec![4, 3, 1, 2, 4, 1, 3, 2, 1]);
+    }
+
+    #[test]
+    fn adjacent_colors_for_target_four() {
+        assert_eq!(adjacent_colors(4, 4), vec![3, 2, 1]);
+    }
+
+    #[test]
+    fn adjacent_colors_for_target_three() {
+        assert_eq!(adjacent_colors(3, 4), vec![2, 1, 4]);
+    }
+
+    #[test]
+    fn adjacent_colors_for_target_two() {
+        assert_eq!(adjacent_colors(2, 4), vec![1, 4, 3]);
+    }
+
+    #[test]
+    fn adjacent_colors_for_target_one() {
+        assert_eq!(adjacent_colors(1, 4), vec![4, 3, 2]);
     }
 }
