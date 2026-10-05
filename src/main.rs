@@ -83,7 +83,49 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .into());
     }
-    let seed = options.seed.unwrap_or_else(random_seed);
+    let base_seed = options.seed.unwrap_or_else(random_seed);
+    for offset in 0..options.count {
+        let offset_u32 = u32::try_from(offset).map_err(|_| "count exceeds u32 range")?;
+        let level_number = options
+            .level
+            .checked_add(offset_u32)
+            .ok_or("level number overflowed")?;
+        let seed = base_seed
+            .checked_add(offset as u64)
+            .ok_or("seed overflowed while generating levels")?;
+        let level = generate_level(&templates, &options, level_number, seed);
+        let output = if options.count == 1 && options.output_explicit {
+            options.output.clone()
+        } else {
+            options
+                .levels_dir
+                .join(format!("level_{level_number}.json"))
+        };
+        if let Some(parent) = output.parent() {
+            if !parent.as_os_str().is_empty() {
+                fs::create_dir_all(parent)?;
+            }
+        }
+        fs::write(&output, serde_json::to_vec_pretty(&level)?)?;
+        println!(
+            "Generated {} (level {}, seed {}, maxMoves {})",
+            output.display(),
+            level_number,
+            seed,
+            level.max_moves
+        );
+    }
+    update_manifest(
+        &options.levels_dir,
+        &options.manifest,
+        &options.base_url,
+        options.catalog_version,
+    )?;
+    println!("Updated manifest {}", options.manifest.display());
+    Ok(())
+}
+
+fn generate_level(templates: &[Template], options: &Options, level: u32, seed: u64) -> Level {
     let mut rng = StdRng::seed_from_u64(seed);
     let mut grid: Vec<Vec<u8>> = vec![vec![options.target_color; options.width]; options.height];
     for iteration in 0..options.repeats {
@@ -101,34 +143,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    let level = Level {
-        level: options.level,
+    Level {
+        level,
         max_moves: options.repeats + 1,
         target_color: options.target_color,
         colors: color_palette(),
         grid,
-    };
-    if let Some(parent) = options.output.parent() {
-        if !parent.as_os_str().is_empty() {
-            fs::create_dir_all(parent)?;
-        }
     }
-    fs::write(&options.output, serde_json::to_vec_pretty(&level)?)?;
-    update_manifest(
-        &options.levels_dir,
-        &options.manifest,
-        &options.base_url,
-        options.catalog_version,
-    )?;
-    println!(
-        "Generated {} and updated {} (level {}, seed {}, maxMoves {})",
-        options.output.display(),
-        options.manifest.display(),
-        options.level,
-        seed,
-        level.max_moves
-    );
-    Ok(())
 }
 
 struct Options {
@@ -137,6 +158,7 @@ struct Options {
     width: usize,
     height: usize,
     repeats: usize,
+    count: usize,
     target_color: u8,
     seed: Option<u64>,
     templates_dir: PathBuf,
@@ -157,6 +179,7 @@ impl Options {
             width: DEFAULT_WIDTH,
             height: DEFAULT_HEIGHT,
             repeats: DEFAULT_REPEATS,
+            count: 1,
             target_color: DEFAULT_TARGET_COLOR,
             seed: None,
             templates_dir: PathBuf::from("templates"),
@@ -188,6 +211,7 @@ impl Options {
                 "--width" => options.width = value()?.parse()?,
                 "--height" => options.height = value()?.parse()?,
                 "--repeats" => options.repeats = value()?.parse()?,
+                "--count" => options.count = value()?.parse()?,
                 "--target-color" => options.target_color = value()?.parse()?,
                 "--seed" => options.seed = Some(value()?.parse()?),
                 "--templates-dir" => options.templates_dir = value()?.into(),
@@ -206,6 +230,12 @@ impl Options {
         if options.width == 0 || options.height == 0 {
             return Err("width and height must be greater than zero".into());
         }
+        if options.count == 0 {
+            return Err("count must be greater than zero".into());
+        }
+        if options.count > 1 && options.output_explicit {
+            return Err("--output cannot be used with --count greater than 1".into());
+        }
         if !(1..=COLOR_COUNT).contains(&options.target_color) {
             return Err("target-color must be between 1 and 4".into());
         }
@@ -215,11 +245,12 @@ impl Options {
         if !options.level_explicit {
             options.level = next_level_number(&options.levels_dir)?;
         }
-        if !options.output_explicit {
-            options.output = options
-                .levels_dir
-                .join(format!("level_{}.json", options.level));
-        }
+        let last_offset =
+            u32::try_from(options.count - 1).map_err(|_| "count exceeds u32 range")?;
+        options
+            .level
+            .checked_add(last_offset)
+            .ok_or("level range overflowed")?;
         Ok(options)
     }
 }
@@ -388,10 +419,11 @@ fn valid_hex_color(value: &str) -> bool {
 /// Select colors in a predictable cycle while returning to the target after
 /// exactly two non-target iterations.
 ///
-/// For target color 4, the sequence starts as:
-/// `1, 2, 4, 3, 1, 4, 2, 3, 4, ...`.
+/// For target color 4, the sequence starts with its adjacent color:
+/// `3, 2, 4, 1, 3, 4, 2, 1, 4, ...`.
 fn color_for_iteration(iteration: usize, target_color: u8, color_count: u8) -> u8 {
     let available_colors: Vec<u8> = (1..=color_count)
+        .rev()
         .filter(|color| *color != target_color)
         .collect();
     assert!(
@@ -500,8 +532,9 @@ fn random_seed() -> u64 {
 
 fn print_help() {
     println!("Color Flood level generator");
-    println!("Options: --output PATH --level N --width N --height N");
-    println!("         --repeats N --target-color 1..4 --seed N");
+    println!("Options: --output PATH --level N --count N");
+    println!("         --width N --height N --repeats N");
+    println!("         --target-color 1..4 --seed N");
     println!("         --templates-dir PATH --levels-dir PATH");
     println!("         --manifest PATH --base-url URL --catalog-version N");
     println!("         --manifest-only");
@@ -517,7 +550,7 @@ mod tests {
             .map(|iteration| color_for_iteration(iteration, 4, 4))
             .collect();
 
-        assert_eq!(colors, vec![1, 2, 4, 3, 1, 4, 2, 3, 4]);
+        assert_eq!(colors, vec![3, 2, 4, 1, 3, 4, 2, 1, 4]);
     }
 
     #[test]
@@ -526,6 +559,6 @@ mod tests {
             .map(|iteration| color_for_iteration(iteration, 1, 4))
             .collect();
 
-        assert_eq!(colors, vec![2, 3, 1, 4, 2, 1]);
+        assert_eq!(colors, vec![4, 3, 1, 2, 4, 1]);
     }
 }

@@ -49,6 +49,41 @@ size. Có thể đổi vị trí bằng `--levels-dir`, `--manifest` hoặc đ�
 Dùng `--level N` nếu cần chủ động ghi một số level cụ thể; mặc định luôn là
 level mới tiếp theo.
 
+### Các option của generator
+
+| Option | Mặc định | Mô tả |
+|---|---:|---|
+| `--level N` | level tiếp theo | Level bắt đầu được tạo. |
+| `--count N` | `1` | Số level liên tiếp cần tạo. `N` phải lớn hơn 0. |
+| `--output PATH` | tự tạo trong `levels/` | Tên file output khi tạo đúng một level. Không dùng cùng `--count N` khi `N > 1`. |
+| `--width N` | `10` | Chiều rộng grid. |
+| `--height N` | `8` | Chiều cao grid. |
+| `--repeats N` | `6` | Số lần đặt template trong mỗi level. |
+| `--target-color N` | `4` | Màu mục tiêu, từ `1` đến `4`. |
+| `--seed N` | ngẫu nhiên | Seed để tái tạo kết quả. Khi dùng `--count`, mỗi level dùng seed kế tiếp. |
+| `--templates-dir PATH` | `templates` | Thư mục template. |
+| `--levels-dir PATH` | `levels` | Thư mục chứa các level. |
+| `--manifest PATH` | `manifest.json` | File manifest cần cập nhật. |
+| `--base-url URL` | URL GitHub mặc định | URL gốc dùng trong manifest. |
+| `--catalog-version N` | `1` | Phiên bản catalog ghi vào manifest. |
+| `--manifest-only` | tắt | Chỉ validate level hiện có và tạo lại manifest. |
+
+Tạo một level:
+
+```text
+cargo run -- --level 51 --seed 5100
+```
+
+Tạo 10 level liên tiếp, bắt đầu từ level 51:
+
+```text
+cargo run -- --level 51 --count 10 --seed 5100
+```
+
+Lệnh trên tạo `level_51.json` đến `level_60.json`, sau đó cập nhật manifest
+một lần. Nếu không truyền `--level`, generator sẽ bắt đầu từ level tiếp theo
+đang có trong `levels/`.
+
 Để chỉ validate các file đang có và tạo lại manifest, không sinh level mới:
 
 ```text
