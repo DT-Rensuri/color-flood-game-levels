@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Color Flood Content Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">COLOR FLOOD</p>
+      <h1>Content Studio</h1>
+      <p class="subtitle">Chỉnh template local và xem level trước khi publish.</p>
+    </div>
+    <div class="privacy-badge">LOCAL ONLY · Không upload dữ liệu</div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="source-card">
+        <div class="section-heading"><span>01</span><h2>Templates</h2></div>
+        <p class="hint">Chọn thư mục <code>templates</code> hoặc các file JSON.</p>
+        <label class="file-button">Mở templates<input id="templateFiles" type="file" accept=".json,application/json" multiple webkitdirectory></label>
+        <div id="templateList" class="file-list empty">Chưa có template nào.</div>
+      </section>
+
+      <section class="source-card">
+        <div class="section-heading"><span>02</span><h2>Levels</h2></div>
+        <p class="hint">Level chỉ đọc để kiểm tra palette và grid.</p>
+        <label class="file-button secondary">Mở levels<input id="levelFiles" type="file" accept=".json,application/json" multiple webkitdirectory></label>
+        <div id="levelList" class="file-list empty">Chưa có level nào.</div>
+      </section>
+
+      <div class="sidebar-note">
+        <strong>Workflow</strong>
+        <p>Mở dữ liệu → chỉnh template → tải JSON xuống → thay file trong repo → chạy generator.</p>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <div class="workspace-tabs" role="tablist">
+        <button class="tab active" data-panel="templatePanel" role="tab">Template editor</button>
+        <button class="tab" data-panel="levelPanel" role="tab">Level viewer</button>
+      </div>
+
+      <section id="templatePanel" class="panel active-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow accent">EDITOR</p>
+            <h2 id="templateTitle">Template mới</h2>
+            <p id="templatePath" class="muted">Tạo mới hoặc mở một template từ sidebar.</p>
+          </div>
+          <div class="actions">
+            <button id="newTemplate" class="button ghost">Template mới</button>
+            <button id="saveTemplate" class="button primary">Tải JSON</button>
+          </div>
+        </div>
+
+        <div class="editor-toolbar">
+          <label>Tên file<input id="templateName" value="temp_new.json" spellcheck="false"></label>
+          <label>Rộng<input id="templateWidth" type="number" min="1" max="32" value="5"></label>
+          <label>Cao<input id="templateHeight" type="number" min="1" max="32" value="5"></label>
+          <button id="resizeTemplate" class="button ghost">Áp dụng kích thước</button>
+          <span class="toolbar-tip">Click ô để bật/tắt cell. Ô sáng = 1, ô tối = 0.</span>
+        </div>
+
+        <div class="editor-content">
+          <div class="template-stage">
+            <div id="templateGrid" class="template-grid" aria-label="Template grid"></div>
+          </div>
+          <div class="inspector">
+            <div class="stat"><span>Cells</span><strong id="templateCellCount">0</strong></div>
+            <div class="stat"><span>Filled</span><strong id="templateFilledCount">0</strong></div>
+            <div class="stat"><span>Shape</span><strong id="templateShape">0 × 0</strong></div>
+            <div class="inspector-tip"><strong>Gợi ý</strong><p>Template dùng ma trận số 0/1. Generator sẽ bỏ qua các cell bằng 0 và lấy cell khác 0 để tô màu.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="levelPanel" class="panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow accent">READ ONLY</p>
+            <h2 id="levelTitle">Chưa chọn level</h2>
+            <p id="levelPath" class="muted">Mở thư mục levels để bắt đầu xem.</p>
+          </div>
+          <div id="levelMeta" class="level-meta"></div>
+        </div>
+        <div id="levelPalette" class="palette"></div>
+        <div class="level-stage"><div id="levelGrid" class="level-grid"></div></div>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

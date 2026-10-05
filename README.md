@@ -114,3 +114,26 @@ Nếu một file sai schema, tool dừng và không ghi manifest mới.
 
 Nếu manifest hoặc một level lỗi, app giữ bundled level và cache hợp lệ gần
 nhất thay vì làm hỏng toàn bộ catalog.
+
+## Template editor web
+
+Repo có một web editor local tại `template_editor/` để xem/chỉnh sửa nội dung
+trước khi chạy generator:
+
+- Mở các file hoặc thư mục `templates` để xem và chỉnh ma trận 0/1.
+- Click vào ô để bật/tắt cell, thay đổi kích thước, tạo template mới và tải
+  JSON về máy.
+- Mở thư mục `levels` để xem grid, palette, target color và max moves ở chế độ
+  chỉ đọc.
+- Dữ liệu chỉ được đọc trong trình duyệt, không upload lên server.
+
+Mở file `template_editor/index.html` trực tiếp bằng trình duyệt hiện đại. Nếu
+trình duyệt chặn chọn thư mục khi mở bằng `file://`, chạy một static server
+local trong thư mục `template_editor` rồi mở địa chỉ được in ra, ví dụ:
+
+```text
+python -m http.server 8080
+```
+
+Sau khi tải template JSON đã chỉnh sửa về, chép file vào `templates/` rồi chạy
+generator như bình thường.
